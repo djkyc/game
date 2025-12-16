@@ -1,7 +1,7 @@
 name: Build and Push Docker Image
 
 on:
-  # ✨ 仅手动运行，不会因 push 触发
+  # ✨ 仅手动运行
   workflow_dispatch:
 
 jobs:
@@ -16,8 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       ######################################################
-      # ✨✨ 自定义 Docker 镜像名称 ✨✨
-      # 修改下面 IMAGE_NAME 即可！
+      # ✨ 自定义镜像名称（你可以改）
       ######################################################
       - name: Set custom image name
         run: echo "IMAGE_NAME=game-all" >> $GITHUB_ENV
@@ -42,16 +41,15 @@ jobs:
           context: .
           push: true
 
-          # ✨ 支持三平台
+          # ✨ 三平台架构
           platforms: |
             linux/amd64
             linux/arm64
             linux/arm/v7
 
-          # ✨ 两种 tag：latest + Git SHA
+          # ✨ 只推 latest，不推 SHA，这样 GHCR 页面只显示 latest！
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
