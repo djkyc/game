@@ -1,12 +1,8 @@
-name: Build game Docker Image
+name: Build and Push Docker Image
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'Dockerfile'
-      - 'index.js'
-      - 'package.json'
   workflow_dispatch:
 
 jobs:
@@ -14,25 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write   # 必须，否则无法推送到 GHCR
+      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
       ######################################################
-      # 自定义镜像名称（你可以随便改）
+      # ✨✨ 自定义 Docker 镜像名称 ✨✨
+      # 修改下面 IMAGE_NAME 即可！
       ######################################################
       - name: Set custom image name
         run: echo "IMAGE_NAME=game-all" >> $GITHUB_ENV
-        # 例如想发布为 my-server，就写 echo "IMAGE_NAME=my-server"
-        # 镜像地址会变成：ghcr.io/<OWNER>/<IMAGE_NAME>:latest
+        # 你想改成任何名字都可以，例如：
+        # echo "IMAGE_NAME=myserver" >> $GITHUB_ENV
       ######################################################
 
 
-      # 登录 GHCR
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -42,19 +37,27 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Build & Push
-      - name: Build and push Docker image
+      - name: Build & Push Multi-Arch Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+
+          # ✨ 支持三平台
+          platforms: |
+            linux/amd64
+            linux/arm64
+            linux/arm/v7
+
+          # ✨ 两种 tag：latest + Git SHA
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=HTTP Server
+            org.opencontainers.image.description=Custom build for ${{ env.IMAGE_NAME }}
             org.opencontainers.image.licenses=MIT
+
           cache-from: type=gha
           cache-to: type=gha,mode=max
