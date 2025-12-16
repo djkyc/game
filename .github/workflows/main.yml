@@ -1,15 +1,15 @@
-name: Build game docker
+name: Build huggingface Image
 
 on:
   push:
-    分支: [ main ]
+    branches: [ main ]
     paths:
       - 'start.sh'
       - 'index.js'
       - 'package.json'
 
   pull_request:
-    分支: [ mani ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
