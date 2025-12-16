@@ -1,4 +1,4 @@
-name: Build huggingface Image
+name: Build game Image
 
 on:
   push:
